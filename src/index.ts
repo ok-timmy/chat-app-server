@@ -1,9 +1,12 @@
 import express, { Express, Request, Response } from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 
-dotenv.config();
-
 const app: Express = express();
+
+dotenv.config();
+app.use(cors())
+
 const port = 3001;
 
 app.get('/', (req: Request, res: Response) => {

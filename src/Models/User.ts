@@ -1,0 +1,14 @@
+/*
+Create User with the following details
+Email
+username
+FirstName
+lastName
+profilePic
+Bio
+Friends
+Followers
+Friend requests
+sent friend request
+
+*/
