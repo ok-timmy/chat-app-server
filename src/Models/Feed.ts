@@ -10,3 +10,38 @@ What to create in a feed
 -comments - points to the comment model
 
 */
+
+import { Types, model, Schema } from "mongoose";
+
+const feedSchema = new Schema(
+  {
+    feedImage: {
+      type: String,
+      required: false,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    numberOfShares: {
+      type: Number,
+    },
+    likes: [
+      {
+        type: Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    comments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = model("Feed", feedSchema);

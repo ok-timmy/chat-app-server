@@ -13,3 +13,7 @@ put - comment on feed
 **Maybe** Include a feature where a feed poster only allows people who are their friends comment
 
 */
+
+import { Router } from "express";
+
+const {get, post, put, patch} = Router();
