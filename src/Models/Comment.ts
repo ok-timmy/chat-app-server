@@ -18,7 +18,7 @@ const CommentSchema = new Schema(
       type: Types.ObjectId,
       ref: "User",
     },
-    post: {
+    postId: {
       type: Types.ObjectId,
       ref: "Feed",
     },
@@ -32,4 +32,5 @@ const CommentSchema = new Schema(
   }
 );
 
-module.exports = model("Comment", CommentSchema);
+export const Comment = model("Comment", CommentSchema);
+module.exports = Comment;

@@ -1,3 +1,3 @@
 import { Router } from "express";
 
-const {get, post} = Router();
+const {get, post, put, patch} = Router();

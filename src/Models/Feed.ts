@@ -17,14 +17,18 @@ const feedSchema = new Schema(
   {
     feedImage: {
       type: String,
-      required: false,
     },
     content: {
       type: String,
       required: true,
     },
+    numberOfLikes: {
+      type: Number,
+      default: 0,
+    },
     numberOfShares: {
       type: Number,
+      default: 0,
     },
     likes: [
       {
@@ -34,14 +38,20 @@ const feedSchema = new Schema(
     ],
     comments: [
       {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: "User",
       },
     ],
+    author: [{
+      type: Types.ObjectId,
+      ref: "User"
+    }
+    ]
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = model("Feed", feedSchema);
+export const Feed = model("Feed", feedSchema);
+module.exports = Feed;

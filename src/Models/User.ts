@@ -24,6 +24,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    fullName: {
+      type:String,
+    }, 
+    
     bio: { type: String },
     profilePic: {
       type: String,
