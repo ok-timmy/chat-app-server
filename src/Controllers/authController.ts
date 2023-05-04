@@ -3,10 +3,9 @@ import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 import { User } from "../Models/User";
 import { Request, Response } from "express";
-import { config } from "dotenv";
+import config from "../config";
 const salt = 10;
 
-config();
 
 //Create a new user
 exports.createUser = async (req: Request, res: Response): Promise<Object> => {
@@ -72,13 +71,13 @@ exports.signInUser = async (req: Request, res: Response): Promise<Object> => {
       if (validate) {
         const accessToken = sign(
           { username: foundUser.email },
-          process.env.ACCESS_TOKEN_SECRET,
+          config.ACCESS_TOKEN_SECRET,
           { expiresIn: "12000s" }
         );
 
         const refreshToken = sign(
           { userEmail: foundUser.email },
-          process.env.REFRESH_TOKEN_SECRET,
+          config.REFRESH_TOKEN_SECRET,
           { expiresIn: "1d" }
         );
 
