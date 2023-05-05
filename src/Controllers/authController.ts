@@ -8,7 +8,7 @@ const salt = 10;
 
 
 //Create a new user
-exports.createUser = async (req: Request, res: Response): Promise<Object> => {
+export const createUser = async (req: Request, res: Response): Promise<Object> => {
   const { email, password, userName, firstName, lastName  } = req.body;
 
   const errors = validationResult(req);
@@ -50,7 +50,7 @@ exports.createUser = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Login User
-exports.signInUser = async (req: Request, res: Response): Promise<Object> => {
+export const signInUser = async (req: Request, res: Response): Promise<Object> => {
   const { userName, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -121,7 +121,7 @@ exports.signInUser = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Edit User Profile
-exports.editUserProfile = async (
+export const editUserProfile = async (
   req: Request,
   res: Response
 ): Promise<Object> => {
@@ -146,7 +146,7 @@ exports.editUserProfile = async (
 };
 
 //Find A user either by username or by full name
-exports.findUser = async (req: Request, res: Response): Promise<Object> => {
+export const findUser = async (req: Request, res: Response): Promise<Object> => {
   const { userName, fullName } = req.query;
 
   let foundUsersArray: Array<Object> = [];
@@ -175,7 +175,7 @@ exports.findUser = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Delete User Profile
-exports.deleteUserProfile = async (
+export const deleteUserProfile = async (
   req: Request,
   res: Response
 ): Promise<Object> => {

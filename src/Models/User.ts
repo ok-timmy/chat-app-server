@@ -53,10 +53,12 @@ const UserSchema = new Schema(
       },
     ],
     accessToken: {
-      type: String
+      type: String,
+      default: null
     },
     refreshToken: {
-      type: String
+      type: String,
+      default: null
     },
   },
   {

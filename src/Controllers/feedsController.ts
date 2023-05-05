@@ -4,7 +4,7 @@ import { Comment } from "../Models/Comment";
 import { User } from "../Models/User";
 
 //Get all feeds
-exports.getAllFeeds = async (req: Request, res: Response): Promise<Object> => {
+export const getAllFeeds = async (req: Request, res: Response): Promise<Object> => {
   try {
     const foundFeeds = await Feed.find().sort({ updatedAt: -1 }).exec();
     return res.status(200).json({
@@ -20,7 +20,7 @@ exports.getAllFeeds = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Create Feed
-exports.createFeed = async (req: Request, res: Response): Promise<Object> => {
+export const createFeed = async (req: Request, res: Response): Promise<Object> => {
   try {
     const { content } = req.body;
     const newFeed = new Feed({
@@ -39,7 +39,7 @@ exports.createFeed = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Edit Feed
-exports.editFeed = async (req: Request, res: Response): Promise<Object> => {
+export const editFeed = async (req: Request, res: Response): Promise<Object> => {
   const id = { _id: req.params.id };
   const { content } = req.body;
 
@@ -69,7 +69,7 @@ exports.editFeed = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Delete Feed
-exports.deleteFeed = async (req: Request, res: Response): Promise<Object> => {
+export const deleteFeed = async (req: Request, res: Response): Promise<Object> => {
   const id = { _id: req.params.id };
 
   try {
@@ -86,7 +86,7 @@ exports.deleteFeed = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Like Feed
-exports.likeFeed = async (req: Request, res: Response): Promise<Object> => {
+export const likeFeed = async (req: Request, res: Response): Promise<Object> => {
   const { postId, userId } = req.params;
 
   try {
@@ -150,7 +150,7 @@ exports.likeFeed = async (req: Request, res: Response): Promise<Object> => {
 };
 
 // Share Feed
-exports.shareFeed = async (req: Request, res: Response): Promise<Object> => {
+export const shareFeed = async (req: Request, res: Response): Promise<Object> => {
   const { postId } = req.params;
   const foundFeed = await Feed.findOne({ _id: postId });
   let prevNumOfShare = foundFeed?.numberOfShares;
@@ -182,7 +182,7 @@ exports.shareFeed = async (req: Request, res: Response): Promise<Object> => {
 };
 
 //Comment On Feed
-exports.postComment = async (req: Request, res: Response): Promise<Object> => {
+export const postComment = async (req: Request, res: Response): Promise<Object> => {
   try {
     const { commenter, content } = req.body;
 
