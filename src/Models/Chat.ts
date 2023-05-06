@@ -11,14 +11,15 @@ const ChatSchema = new Schema({
           ref: "User",
         },
       ],
-      latestMessage: {
+      latestMessage: [{
         type: Types.ObjectId,
         ref: "Message",
-      },
+      }],
     },
     {
       timestamps: true,
     }
 )
 
-module.exports = model("Chat", ChatSchema)
+export const Chat = model("Chat", ChatSchema)
+module.exports = Chat

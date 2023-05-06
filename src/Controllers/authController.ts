@@ -76,7 +76,7 @@ export const signInUser = async (req: Request, res: Response): Promise<Object> =
         );
 
         const refreshToken = sign(
-          { userEmail: foundUser.email },
+          { userEmail: foundUser.email, userId: foundUser._id },
           config.REFRESH_TOKEN_SECRET,
           { expiresIn: "1d" }
         );
