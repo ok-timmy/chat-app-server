@@ -145,6 +145,17 @@ export const editUserProfile = async (
   }
 };
 
+//Update Cover Image
+export const uploadCoverImage = async(req: Request, res: Response) => {
+
+}
+
+
+//Update Profile Picture
+export const uploadProfilePicture = async(req: Request, res: Response) => {
+
+}
+
 //Find A user either by username or by full name
 export const findUser = async (req: Request, res: Response): Promise<Object> => {
   const { userName, fullName } = req.query;

@@ -34,6 +34,12 @@ const UserSchema = new Schema(
       default:
         "https://i.pinimg.com/736x/a8/57/00/a85700f3c614f6313750b9d8196c08f5.jpg",
     },
+    coverImage: {
+      type: String,
+    },
+    location: {
+      type: String
+    },
     friend: [
       {
         type: Types.ObjectId,
