@@ -2,10 +2,8 @@ import { Router } from "express";
 import { check } from "express-validator";
 import {
   createUser,
-  deleteUserProfile,
-  editUserProfile,
-  findUser,
   signInUser,
+  signinWithGoogle,
 } from "../Controllers/authController";
 
 const { get, post, put, patch } = Router();
@@ -21,11 +19,5 @@ post(
 //Login User
 post("api/auth/login", signInUser);
 
-//Edit User Details
-put("api/user/:id", editUserProfile);
-
-//Delete User
-Router().delete("api/user/:id", deleteUserProfile);
-
-//Find User by username or first Name or Last Name
-get("api/user/find/?username=detail&fullName=detail", findUser);
+//Login Using Google 
+post("api/auth/signInWithGoogle", signinWithGoogle)

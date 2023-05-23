@@ -3,13 +3,16 @@ import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 import { User } from "../Models/User";
 import { Request, Response } from "express";
+import { OAuth2Client } from "google-auth-library";
 import config from "../config";
 const salt = 10;
 
-
 //Create a new user
-export const createUser = async (req: Request, res: Response): Promise<Object> => {
-  const { email, password, userName, firstName, lastName  } = req.body;
+export const createUser = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
+  const { email, password, userName, firstName, lastName } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -50,7 +53,10 @@ export const createUser = async (req: Request, res: Response): Promise<Object> =
 };
 
 //Login User
-export const signInUser = async (req: Request, res: Response): Promise<Object> => {
+export const signInUser = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   const { userName, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -70,7 +76,7 @@ export const signInUser = async (req: Request, res: Response): Promise<Object> =
 
       if (validate) {
         const accessToken = sign(
-          { username: foundUser.email },
+          { userEmail: foundUser.email },
           config.ACCESS_TOKEN_SECRET,
           { expiresIn: "12000s" }
         );
@@ -88,7 +94,7 @@ export const signInUser = async (req: Request, res: Response): Promise<Object> =
         res.cookie("jwt", accessToken, {
           httpOnly: true,
           maxAge: 1000 * 60 * 60 * 24,
-          // sameSite: "None",
+          // sameSite: "none",
           // secure: true,  This has to be in production mode
         });
 
@@ -120,86 +126,138 @@ export const signInUser = async (req: Request, res: Response): Promise<Object> =
   }
 };
 
-//Edit User Profile
-export const editUserProfile = async (
-  req: Request,
-  res: Response
-): Promise<Object> => {
-  const id = { _id: req.params.id };
+//SIGN IN WITH GOOGLE ACCOUNT
+export const signinWithGoogle = async (req: Request, res: Response) => {
+  const client = new OAuth2Client(config.GOOGLE_CLIENT_ID);
+  const { idToken } = req.body;
 
-  try {
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
-      new: true,
+  client
+    .verifyIdToken({ idToken, audience: config.GOOGLE_CLIENT_ID })
+    .then(async (response) => {
+      //Check if the user gmail is verified and get details
+      const { email_verified, name, email, profilePic } = response?.payload;
+
+      //If email is verified, proceed to find the user in the database
+      if (email_verified) {
+        // Check if the user already exist in the database
+
+        const foundUser = await User.findOne({ email });
+        // If user is found Log the user in instead
+        if (foundUser) {
+          //Destructure all what you need from the user details now
+          const { _id, firstName, lastName, email, profilePic } = foundUser;
+
+          const accessToken = sign(
+            { userEmail: email },
+            config.ACCESS_TOKEN_SECRET,
+            { expiresIn: "12000s" }
+          );
+
+          const refreshToken = sign(
+            { userEmail: email, userId: _id },
+            config.REFRESH_TOKEN_SECRET,
+            { expiresIn: "1d" }
+          );
+
+          foundUser.refreshToken = refreshToken;
+          await foundUser.save();
+          // console.log("Refresh Token updated", refreshToken)
+          // console.log(result);
+          // console.log(userRoles);
+
+          // Creates Secure Cookie with refresh token
+          res.cookie("jwt", refreshToken, {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000,
+            // sameSite: "none",
+            // secure: true,  This has to be in production mode
+          });
+
+          // Send authorization roles and access token to user
+          return res.json({
+            _id,
+            email,
+            firstName,
+            lastName,
+            profilePic,
+            accessToken,
+          });
+        } else {
+          // If user is not found create a new user and save to the database using the details gotten from the user google account
+          const password : string = email + config.SECRET_HASH;
+          const firstName : string = name.split(" ")[0];
+          const lastName : string = name.split(" ")[1];
+
+          const hashedPassword = await bcrypt.hash(password, salt);
+
+          const newUser = new User({
+            email: email,
+            password: hashedPassword,
+            firstName: firstName,
+            lastName: lastName,
+            fullName: `${firstName} ${lastName}`,
+            profilePic: profilePic
+          });
+
+          newUser
+            .save()
+            .then(async (data) => {
+              //Destructure all what you need from the user details now
+              const { _id, firstName, lastName, email, profilePic } = newUser;
+
+              const accessToken = sign(
+                { userEmail: email },
+                config.ACCESS_TOKEN_SECRET,
+                { expiresIn: "12000s" }
+              );
+
+              const refreshToken = sign(
+                { userEmail: email, userId: _id },
+                config.REFRESH_TOKEN_SECRET,
+                { expiresIn: "1d" }
+              );
+
+              newUser.refreshToken = refreshToken;
+              await newUser.save();
+
+              // Creates Secure Cookie with refresh token
+              res.cookie("jwt", refreshToken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                // secure: true,
+                // sameSite: "none"  This should be done in production mode,
+              });
+
+              // Send authorization roles and access token to user
+              return res.json({
+                _id,
+                email,
+                firstName,
+                lastName,
+                profilePic,
+                accessToken,
+              });
+            })
+            .catch((err) => {
+              // Catch the error that occurs in saving the user to the database
+              return res.status(401).json({
+                statusCode: 401,
+                message: "Signup error",
+              });
+            });
+        }
+      } else {
+        // At this point, it means the call to sign in using gmail account failed so just return a status 400 to them
+        return res.status(400).json({
+          statusCode: 400,
+          message: "Google Login Failed. Try Again",
+        });
+      }
     })
-      .select("-password")
-      .select("-refreshToken");
-    return res.status(200).json({
-      message: "User Data Updated Successfully",
-      data: updatedUser,
+    .catch((error) => {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Error occured while verifying Id Token",
+      });
     });
-  } catch (error) {
-    return res.status(500).json({
-      message: "An Error Occured",
-      error,
-    });
-  }
-};
-
-//Update Cover Image
-export const uploadCoverImage = async(req: Request, res: Response) => {
-
-}
-
-
-//Update Profile Picture
-export const uploadProfilePicture = async(req: Request, res: Response) => {
-
-}
-
-//Find A user either by username or by full name
-export const findUser = async (req: Request, res: Response): Promise<Object> => {
-  const { userName, fullName } = req.query;
-
-  let foundUsersArray: Array<Object> = [];
-  try {
-    if (userName) {
-      const foundUsers = await User.find({ userName }).select(
-        "_id userName fullName profilePic"
-      );
-      foundUsers.map((foundUser) => foundUsersArray.push(foundUser));
-    }
-    if (fullName) {
-      const foundUsers = await User.find({ fullName }).select(
-        "_id userName fullName profilePic"
-      );
-      foundUsers.map((foundUser) => foundUsersArray.push(foundUser));
-    }
-    return res.status(200).json({
-      result: foundUsersArray,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "An Error Occured, Try Again",
-      error,
-    });
-  }
-};
-
-//Delete User Profile
-export const deleteUserProfile = async (
-  req: Request,
-  res: Response
-): Promise<Object> => {
-  const id = { id: req.params.id };
-
-  try {
-    await User.findByIdAndDelete(id);
-    return res.status(200).json({
-      message: "User has been successfully deleted",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Could Not delete User, An error occured",
-    });
-  }
 };
