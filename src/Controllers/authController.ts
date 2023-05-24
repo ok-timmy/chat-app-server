@@ -133,7 +133,7 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
 
   client
     .verifyIdToken({ idToken, audience: config.GOOGLE_CLIENT_ID })
-    .then(async (response) => {
+    .then(async (response: any) => {
       //Check if the user gmail is verified and get details
       const { email_verified, name, email, profilePic } = response?.payload;
 
