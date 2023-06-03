@@ -1,6 +1,8 @@
-import { Router } from "express";
+import express, {type Router } from "express";
 import { logOutUser } from "../Controllers/logoutController";
 
-const { get } = Router();
+const logoutRouter = express.Router()
 
-get("/logout", logOutUser);
+logoutRouter.get("/logout", logOutUser);
+
+export = logoutRouter

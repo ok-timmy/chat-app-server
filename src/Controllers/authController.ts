@@ -20,7 +20,7 @@ export const createUser = async (
   }
 
   // Check If User already exist and return appropriate error.
-  const checkUserExist = await User.findOne({ email });
+  const checkUserExist = await User.findOne(email);
   if (checkUserExist) {
     return res
       .status(409)
@@ -184,9 +184,9 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
           });
         } else {
           // If user is not found create a new user and save to the database using the details gotten from the user google account
-          const password : string = email + config.SECRET_HASH;
-          const firstName : string = name.split(" ")[0];
-          const lastName : string = name.split(" ")[1];
+          const password: string = email + config.SECRET_HASH;
+          const firstName: string = name.split(" ")[0];
+          const lastName: string = name.split(" ")[1];
 
           const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -196,7 +196,7 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
             firstName: firstName,
             lastName: lastName,
             fullName: `${firstName} ${lastName}`,
-            profilePic: profilePic
+            profilePic: profilePic,
           });
 
           newUser

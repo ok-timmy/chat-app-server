@@ -1,14 +1,16 @@
-import { Router } from "express";
+import express, {type Router } from "express";
 import { deleteUserProfile, editUserProfile, findUser } from '../Controllers/userController';
 
-  const { get, put, patch } = Router();
-
+const userRouter = express.Router();
 
 //Edit User Details
-put("api/user/:id", editUserProfile);
+userRouter.put("api/user/:id", editUserProfile);
 
 //Delete User
-Router().delete("api/user/:id", deleteUserProfile);
+userRouter.delete("api/user/:id", deleteUserProfile);
 
 //Find User by username or first Name or Last Name
-get("api/user/find/?username=detail&fullName=detail", findUser);
+userRouter.get("api/user/find/?username=detail&fullName=detail", findUser);
+
+
+export = userRouter;

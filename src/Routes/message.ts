@@ -1,8 +1,10 @@
-import { Router } from "express";
+import express, {type Router } from "express";
 import { getMessages, sendMessage } from "../Controllers/messageController";
 
-const {get, post} = Router();
+const messagesRouter = express.Router();
 
-get("api/messages/:chatId", getMessages);
+messagesRouter.get("/:chatId", getMessages);
 
-post("api/messages", sendMessage)
+messagesRouter.post("/api/messages", sendMessage)
+
+export = messagesRouter;

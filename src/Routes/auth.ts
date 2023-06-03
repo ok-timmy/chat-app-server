@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { type Router } from "express";
 import { check } from "express-validator";
 import {
   createUser,
@@ -6,13 +6,12 @@ import {
   signinWithGoogle,
 } from "../Controllers/authController";
 
-var router = Router();
+const authRouter: Router = express.Router();
 
-const { post } = router;
 
 // Create New User
-post(
-  "api/auth/signup",
+authRouter.post(
+  "/signup",
   [
   check("email", "Please Enter A Valid email").isEmail(),
   check("password", "A Valid Password Is Required").exists(),
@@ -21,11 +20,10 @@ post(
 );
 
 //Login User
-post("api/auth/login", signInUser);
+authRouter.post("/login", signInUser);
 
 //Login Using Google
-post("api/auth/signInWithGoogle", signinWithGoogle);
+authRouter.post("/signInWithGoogle", signinWithGoogle);
 
-const authRoutes = router;
 
-export = authRoutes;
+export = authRouter;

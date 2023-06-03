@@ -1,12 +1,21 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response} from "express";
 const { json } = require("express");
 import cors from "cors";
 import dotenv from "dotenv";
 import config from "./config";
 import mongoose from "mongoose";
 import { connectDB } from "./connectDB";
-import { routes } from "./Routes";
 import bodyParser from "body-parser";
+import {
+  authRouter,
+  feedsRouter,
+  logoutRouter,
+  messagesRouter,
+  refreshRouter,
+  userRouter,
+  chatRouter
+} from "./Routes/index";
+import verifyJWT from "./Middlewares/verifyToken";
 
 const app: Express = express();
 
@@ -22,7 +31,15 @@ app.get("/", (req: Request, res: Response) => {
 
 connectDB();
 
-// app.use("/", routes);
+app.use("/api/auth", authRouter);
+app.use("/api/feeds", feedsRouter);
+
+// app.use(verifyJWT);
+app.use("/api/user", userRouter);
+app.use("/api/refresh", refreshRouter);
+app.use("/api/logout", logoutRouter);
+app.use("/api/chat", chatRouter)
+
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);

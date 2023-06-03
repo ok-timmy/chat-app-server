@@ -1,5 +1,15 @@
-import { Router } from "express";
+import express, { type Router } from "express";
+import {
+  createNewChat,
+  fetchChatMessages,
+} from "../Controllers/chatController";
 
-const {get, post, put, patch} = Router();
+const chatRouter: Router = express.Router();
 
-get("")
+//Fetch chat
+chatRouter.get("/chats", createNewChat);
+
+// Create Chat
+chatRouter.post("/chats", fetchChatMessages);
+
+export = chatRouter;

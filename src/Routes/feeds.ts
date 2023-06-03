@@ -4,7 +4,7 @@
 
 */
 
-import { Router } from "express";
+import express, {type Router } from "express";
 import {
   createFeed,
   getAllFeeds,
@@ -15,25 +15,29 @@ import {
   postComment,
 } from "../Controllers/feedsController";
 
-const { get, post, put, patch } = Router();
+const feedsRouter = express.Router()
+
 
 // Get All Feeds
-get("api/feeds/all", getAllFeeds);
+feedsRouter.get("api/feeds/all", getAllFeeds);
 
 //Create Feed
-post("/api/feed/create", createFeed);
+feedsRouter.post("/api/feed/create", createFeed);
 
 //Edit Feed
-put("api/feed/edit/:id", editFeed);
+feedsRouter.put("api/feed/edit/:id", editFeed);
 
 //Delete Feed
-Router().delete("api/feed/delete/:id", deleteFeed);
+feedsRouter.delete("api/feed/delete/:id", deleteFeed);
 
 //Like Feed
-patch("api/feed/like/:postId/:userId", likeFeed);
+feedsRouter.patch("api/feed/like/:postId/:userId", likeFeed);
 
 //Share Feed
-patch("api/feed/share/:postId", shareFeed);
+feedsRouter.patch("api/feed/share/:postId", shareFeed);
 
 //Comment On Feed
-post("api/feed/comment/:postId/:userId", postComment);
+feedsRouter.post("api/feed/comment/:postId/:userId", postComment);
+
+
+export = feedsRouter;

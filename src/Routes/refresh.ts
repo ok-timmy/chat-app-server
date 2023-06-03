@@ -1,6 +1,8 @@
-import { Router } from "express";
+import express, { type Router } from "express";
 import refreshTokenController from "../Controllers/refreshTokenController";
 
-const {get} = Router();
+const refreshRouter = express.Router();
 
-get("/refresh", refreshTokenController)
+refreshRouter.get("/refresh", refreshTokenController);
+
+export = refreshRouter;
