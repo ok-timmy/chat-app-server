@@ -7,7 +7,6 @@ commenter
 **Maybe**
 Response(s) to comment too will be added and that will be an array of comments that point to this comment 
 as parent comment
-
 */
 
 import { Schema, Types, model } from "mongoose";

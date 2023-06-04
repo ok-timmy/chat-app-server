@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Feed } from "../Models/Feed";
 import { Comment } from "../Models/Comment";
 import { User } from "../Models/User";
+import { IFeed } from "../Interfaces/Feed.interface";
 
 //Get all feeds
 export const getAllFeeds = async (req: Request, res: Response): Promise<Object> => {

@@ -1,6 +1,7 @@
 import { Types, model, Schema } from "mongoose";
 
-const UserSchema = new Schema(
+
+const UserSchema : Schema = new Schema(
   {
     email: {
       type: String,
@@ -72,5 +73,5 @@ const UserSchema = new Schema(
   }
 );
 
-export const User = model("User", UserSchema);
-module.exports = User;
+export const User  = model("User", UserSchema);
+// module.exports = User;

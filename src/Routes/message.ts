@@ -3,8 +3,11 @@ import { getMessages, sendMessage } from "../Controllers/messageController";
 
 const messagesRouter = express.Router();
 
+//FETCH MESSAGES
 messagesRouter.get("/:chatId", getMessages);
 
-messagesRouter.post("/api/messages", sendMessage)
+
+//SEND MESSAGE
+messagesRouter.post("/", sendMessage)
 
 export = messagesRouter;

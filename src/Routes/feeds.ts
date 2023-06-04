@@ -19,10 +19,10 @@ const feedsRouter = express.Router()
 
 
 // Get All Feeds
-feedsRouter.get("api/feeds/all", getAllFeeds);
+feedsRouter.get("/all", getAllFeeds);
 
 //Create Feed
-feedsRouter.post("/api/feed/create", createFeed);
+feedsRouter.post("/create", createFeed);
 
 //Edit Feed
 feedsRouter.put("api/feed/edit/:id", editFeed);

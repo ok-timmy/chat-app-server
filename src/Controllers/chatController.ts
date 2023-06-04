@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Chat } from "../Models/Chat";
 import { User } from "../Models/User";
+import { IChat } from "../Interfaces/Chat.interface";
 
 // GET ALL THE MESSAGES IN A PARTICULAR CHAT
 export const fetchChatMessages = async (
@@ -13,7 +14,8 @@ export const fetchChatMessages = async (
       .populate("latestMessages")
       .sort({ updatedAt: -1 })
       .then(async (result) => {
-        const populatedChat = await User.populate(result, {
+        //Come back to edit this type to what it should be
+        const populatedChat: Object | null = await User.populate(result, {
           path: "latestMessage.sender",
           select: "profilePic fullName userName email",
         });
@@ -47,7 +49,7 @@ export const createNewChat = async (
     });
   }
 
-  const doesChatExist = await Chat.find({
+  const doesChatExist: Array<IChat | null> = await Chat.find({
     $and: [
       { users: { $elemMatch: { $eq: req.body.senderId } } },
       { users: { $elemMatch: { $eq: req.body.recipientId } } },
@@ -56,7 +58,7 @@ export const createNewChat = async (
     .populate("users", "-password")
     .populate("latestMessage");
 
-  const newChat = await User.populate(doesChatExist, {
+  const newChat: Array<Object | null> = await User.populate(doesChatExist, {
     path: "latestMessage.sender",
     select: " firstName profilePic email",
   });
@@ -74,10 +76,9 @@ export const createNewChat = async (
 
     try {
       const createdChat = await Chat.create(chatData);
-      const fullChat = await Chat.findOne({ _id: createdChat._id }).populate(
-        "users",
-        "-password"
-      );
+      const fullChat: IChat | null = await Chat.findOne({
+        _id: createdChat._id,
+      }).populate("users", "-password");
       return res.sendStatus(200).json({
         message: "Chat created and fetched successfull",
         data: fullChat,

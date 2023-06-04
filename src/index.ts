@@ -38,7 +38,8 @@ app.use("/api/feeds", feedsRouter);
 app.use("/api/user", userRouter);
 app.use("/api/refresh", refreshRouter);
 app.use("/api/logout", logoutRouter);
-app.use("/api/chat", chatRouter)
+app.use("/api/chats", chatRouter)
+app.use("/api/chat/messages", messagesRouter)
 
 
 app.listen(port, () => {

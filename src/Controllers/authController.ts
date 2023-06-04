@@ -5,6 +5,7 @@ import { User } from "../Models/User";
 import { Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
 import config from "../config";
+import { IUser } from "../Interfaces/user.interface";
 const salt = 10;
 
 //Create a new user
@@ -20,7 +21,8 @@ export const createUser = async (
   }
 
   // Check If User already exist and return appropriate error.
-  const checkUserExist = await User.findOne(email);
+  const checkUserExist: IUser|null = await User.findOne({email: email});
+  console.log('line 24', checkUserExist);
   if (checkUserExist) {
     return res
       .status(409)
@@ -29,9 +31,10 @@ export const createUser = async (
 
   try {
     const hashedPassword = await bcrypt.hash(password, salt);
+    // console.log(hashedPassword);
     const newUser = new User({
       email,
-      hashedPassword,
+      password: hashedPassword,
       userName,
       firstName,
       lastName,
@@ -58,6 +61,7 @@ export const signInUser = async (
   res: Response
 ): Promise<Object> => {
   const { userName, password } = req.body;
+  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -65,12 +69,12 @@ export const signInUser = async (
 
   try {
     //Check if userName does not exist
-    const foundUser = await User.findOne({ email: req.body.email });
-    // console.log(foundUser);
+    const foundUser: IUser|null = await User.findOne({ userName: userName });
+
     if (foundUser) {
       // console.log("User was found");
       const validate = await bcrypt.compare(
-        req.body.password,
+        password,
         foundUser.password
       );
 
@@ -116,7 +120,7 @@ export const signInUser = async (
       }
     } else {
       // console.log("User Was not found");
-      return res.status(401).send({ message: "User does not exist" });
+      return res.status(400).send({ message: "User does not exist" });
     }
   } catch (error) {
     return res.status(500).json({
@@ -141,7 +145,7 @@ export const signinWithGoogle = async (req: Request, res: Response) => {
       if (email_verified) {
         // Check if the user already exist in the database
 
-        const foundUser = await User.findOne({ email });
+        const foundUser: IUser|null = await User.findOne({ email });
         // If user is found Log the user in instead
         if (foundUser) {
           //Destructure all what you need from the user details now

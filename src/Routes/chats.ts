@@ -7,9 +7,9 @@ import {
 const chatRouter: Router = express.Router();
 
 //Fetch chat
-chatRouter.get("/chats", createNewChat);
+chatRouter.get("/", fetchChatMessages);
 
 // Create Chat
-chatRouter.post("/chats", fetchChatMessages);
+chatRouter.post("/", createNewChat);
 
 export = chatRouter;

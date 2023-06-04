@@ -42,11 +42,11 @@ const feedSchema = new Schema(
         ref: "User",
       },
     ],
-    author: [{
-      type: Types.ObjectId,
-      ref: "User"
-    }
-    ]
+    author: {
+        type: Types.ObjectId,
+        ref: "User",
+      },
+
   },
   {
     timestamps: true,

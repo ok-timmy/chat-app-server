@@ -1,5 +1,6 @@
 import {Schema, Types, model} from "mongoose";
 
+
 const ChatSchema = new Schema({
     chatName: {
         type: String,

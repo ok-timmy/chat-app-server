@@ -4,13 +4,13 @@ import { deleteUserProfile, editUserProfile, findUser } from '../Controllers/use
 const userRouter = express.Router();
 
 //Edit User Details
-userRouter.put("api/user/:id", editUserProfile);
+userRouter.put("/:id", editUserProfile);
 
 //Delete User
-userRouter.delete("api/user/:id", deleteUserProfile);
+userRouter.delete("/:id", deleteUserProfile);
 
 //Find User by username or first Name or Last Name
-userRouter.get("api/user/find/?username=detail&fullName=detail", findUser);
+userRouter.get("/find/?username=detail&fullName=detail", findUser);
 
 
 export = userRouter;

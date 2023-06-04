@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Message } from "../Models/Message";
 import { User } from "../Models/User";
 import { Chat } from "../Models/Chat";
+import { IMessage } from "../Interfaces/message.interface";
 
 //GET ALL MESSAGES
 export const getMessages = async (
@@ -11,7 +12,9 @@ export const getMessages = async (
   const { chatId } = req.params;
 
   try {
-    const messages = await Message.find({ chat: chatId })
+    const messages: Array<IMessage | null> = await Message.find({
+      chat: chatId,
+    })
       .populate("sender", "fullName userName profilePic email ")
       .populate("chat");
 
