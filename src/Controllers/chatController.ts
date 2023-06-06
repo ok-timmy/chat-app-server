@@ -49,7 +49,7 @@ export const createNewChat = async (
     });
   }
 
-  const doesChatExist: Array<IChat | null> = await Chat.find({
+  const doesChatExist = await Chat.find({
     $and: [
       { users: { $elemMatch: { $eq: req.body.senderId } } },
       { users: { $elemMatch: { $eq: req.body.recipientId } } },
@@ -58,7 +58,7 @@ export const createNewChat = async (
     .populate("users", "-password")
     .populate("latestMessage");
 
-  const newChat: Array<Object | null> = await User.populate(doesChatExist, {
+  const newChat = await User.populate(doesChatExist, {
     path: "latestMessage.sender",
     select: " firstName profilePic email",
   });

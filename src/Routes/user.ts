@@ -1,7 +1,18 @@
-import express, {type Router } from "express";
-import { deleteUserProfile, editUserProfile, findUser } from '../Controllers/userController';
+import express, { type Router } from "express";
+import {
+  deleteUserProfile,
+  editUserProfile,
+  findUser,
+} from "../Controllers/userController";
+import {
+  acceptFriendRequest,
+  deleteFriendRequest,
+  getFriends,
+  sendFriendRequest,
+  unFriend,
+} from "../Controllers/requestsController";
 
-const userRouter = express.Router();
+const userRouter: Router = express.Router();
 
 //Edit User Details
 userRouter.put("/:id", editUserProfile);
@@ -11,6 +22,22 @@ userRouter.delete("/:id", deleteUserProfile);
 
 //Find User by username or first Name or Last Name
 userRouter.get("/find/?username=detail&fullName=detail", findUser);
+
+//Get all Friends
+userRouter.get("/allFriends", getFriends)
+
+//Accept Friend Request
+userRouter.post("/acceptRequest", acceptFriendRequest);
+
+//Send Friend Request
+userRouter.post("/sendRequest", sendFriendRequest);
+
+//Remove a friend
+userRouter.post("/unfriend", unFriend);
+
+//Delete Friend Request
+userRouter.post("/removeFriendRequest", deleteFriendRequest);
+
 
 
 export = userRouter;

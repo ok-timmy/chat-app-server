@@ -41,19 +41,19 @@ const UserSchema : Schema = new Schema(
     location: {
       type: String
     },
-    friend: [
+    friends: [
       {
         type: Types.ObjectId,
         ref: "User",
       },
     ],
-    friendRequest: [
+    friendRequests: [
       {
         type: Types.ObjectId,
         ref: "User",
       },
     ],
-    sentRequest: [
+    sentRequests: [
       {
         type: Types.ObjectId,
         ref: "User",

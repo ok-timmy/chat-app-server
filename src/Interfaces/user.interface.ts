@@ -14,7 +14,7 @@ export interface IUser extends Document {
     accessToken: string,
     refreshToken?: string,
     friends: Array<any>,
-    friendRequest : Array<any>
-    sentRequest: Array<any>
+    friendRequests : Array<any>
+    sentRequests: Array<any>
   
   }
