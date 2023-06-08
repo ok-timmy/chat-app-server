@@ -23,4 +23,3 @@ const ChatSchema = new Schema({
 )
 
 export const Chat = model("Chat", ChatSchema)
-module.exports = Chat

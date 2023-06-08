@@ -74,4 +74,3 @@ const UserSchema : Schema = new Schema(
 );
 
 export const User  = model("User", UserSchema);
-// module.exports = User;

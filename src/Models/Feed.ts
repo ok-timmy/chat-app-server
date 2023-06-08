@@ -13,7 +13,7 @@ What to create in a feed
 
 import { Types, model, Schema } from "mongoose";
 
-const feedSchema = new Schema(
+const feedSchema: Schema = new Schema(
   {
     feedImage: {
       type: String,
@@ -21,6 +21,10 @@ const feedSchema = new Schema(
     content: {
       type: String,
       required: true,
+    },
+    author: {
+      type: Types.ObjectId,
+      ref: "User",
     },
     numberOfLikes: {
       type: Number,
@@ -39,13 +43,10 @@ const feedSchema = new Schema(
     comments: [
       {
         type: Types.ObjectId,
-        ref: "User",
+        ref: "Comment",
       },
     ],
-    author: {
-        type: Types.ObjectId,
-        ref: "User",
-      },
+   
 
   },
   {
@@ -54,4 +55,3 @@ const feedSchema = new Schema(
 );
 
 export const Feed = model("Feed", feedSchema);
-module.exports = Feed;

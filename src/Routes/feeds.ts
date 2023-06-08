@@ -25,19 +25,19 @@ feedsRouter.get("/all", getAllFeeds);
 feedsRouter.post("/create", createFeed);
 
 //Edit Feed
-feedsRouter.put("api/feed/edit/:id", editFeed);
+feedsRouter.put("/edit/:id", editFeed);
 
 //Delete Feed
-feedsRouter.delete("api/feed/delete/:id", deleteFeed);
+feedsRouter.delete("/delete/:id", deleteFeed);
 
 //Like Feed
-feedsRouter.patch("api/feed/like/:postId/:userId", likeFeed);
+feedsRouter.patch("/like/:postId/:userId", likeFeed);
 
 //Share Feed
-feedsRouter.patch("api/feed/share/:postId", shareFeed);
+feedsRouter.patch("/share/:postId", shareFeed);
 
 //Comment On Feed
-feedsRouter.post("api/feed/comment/:postId/:userId", postComment);
+feedsRouter.post("/comment/:postId/:userId", postComment);
 
 
 export = feedsRouter;

@@ -3,9 +3,13 @@ import { Feed } from "../Models/Feed";
 import { Comment } from "../Models/Comment";
 import { User } from "../Models/User";
 import { IFeed } from "../Interfaces/Feed.interface";
+import {  Types } from "mongoose";
 
 //Get all feeds
-export const getAllFeeds = async (req: Request, res: Response): Promise<Object> => {
+export const getAllFeeds = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   try {
     const foundFeeds = await Feed.find().sort({ updatedAt: -1 }).exec();
     return res.status(200).json({
@@ -21,17 +25,49 @@ export const getAllFeeds = async (req: Request, res: Response): Promise<Object> 
 };
 
 //Create Feed
-export const createFeed = async (req: Request, res: Response): Promise<Object> => {
+export const createFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   try {
-    const { content } = req.body;
-    const newFeed = new Feed({
-      content,
-    });
-    await newFeed.save();
-    return res.status(200).json({
-      message: "Post Created Successfully",
-    });
+    const { content, userId } = req.body;
+    if (!content) {
+      return res.status(202).json({
+        message: "Feed content Cannot be empty",
+      });
+    }
+    if (!userId) {
+      return res.status(404).json({
+        message: "No User Id found in request, check request body",
+      });
+    }
+    const newFeed = {
+      content: content,
+      author: userId,
+    };
+    try {
+      const createdFeed = (await Feed.create({ ...newFeed })).populate(
+        "author",
+        "userName firstName lastName profilePic"
+      );
+
+      const feedPopulated = await User.populate(createdFeed, {
+        path: "feed.author",
+        select: "userName firstName lastName profilePic",
+      });
+      return res.status(200).json({
+        message: "Post Created Successfully",
+        data: feedPopulated,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Something went wrong while trying to save Feed, try again",
+        data: error,
+      });
+    }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "An Error Occured",
       error,
@@ -40,16 +76,29 @@ export const createFeed = async (req: Request, res: Response): Promise<Object> =
 };
 
 //Edit Feed
-export const editFeed = async (req: Request, res: Response): Promise<Object> => {
+export const editFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   const id = { _id: req.params.id };
-  const { content } = req.body;
+  const { content, authorId } = req.body;
+
+  const feedToBeEdited = await Feed.findById(id).populate(
+    "author",
+    "_id firstName userName lastName"
+  );
+  if (authorId !== (feedToBeEdited?.author?._id).toString()) {
+    return res.status(403).json({
+      message: "This User cannot edit this feed as they are not the author",
+    });
+  }
 
   try {
     const updatedFeed = await Feed.findByIdAndUpdate(
       id,
       {
-        $addToSet: {
-          content,
+        $set: {
+          content: content,
         },
       },
       {
@@ -62,6 +111,7 @@ export const editFeed = async (req: Request, res: Response): Promise<Object> => 
       result: updatedFeed,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "An Error Occured, Please Try again",
       error,
@@ -70,8 +120,23 @@ export const editFeed = async (req: Request, res: Response): Promise<Object> => 
 };
 
 //Delete Feed
-export const deleteFeed = async (req: Request, res: Response): Promise<Object> => {
+export const deleteFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   const id = { _id: req.params.id };
+
+  const { authorId } = req.body;
+
+  const feedToBeDeleted = await Feed.findById(id).populate(
+    "author",
+    "_id firstName userName lastName"
+  );
+  if (authorId !== (feedToBeDeleted?.author?._id).toString()) {
+    return res.status(403).json({
+      message: "This User cannot edit this feed as they are not the author",
+    });
+  }
 
   try {
     await Feed.findByIdAndDelete(id);
@@ -87,41 +152,47 @@ export const deleteFeed = async (req: Request, res: Response): Promise<Object> =
 };
 
 //Like Feed
-export const likeFeed = async (req: Request, res: Response): Promise<Object> => {
+export const likeFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   const { postId, userId } = req.params;
 
   try {
-    const foundFeed = await Feed.findOne({ _id: postId });
+    const foundFeed: IFeed | null = await Feed.findOne({
+      _id: postId,
+    }).populate("likes", "_id firstName lastName userName");
+
     let updatedFeed;
-    let prevTotalLikes = foundFeed?.numberOfLikes;
-    let increasedLikes = prevTotalLikes && prevTotalLikes + 1;
-    let decreasedLikes = prevTotalLikes && prevTotalLikes - 1;
-    const hasLiked = foundFeed?.likes.find((id) => {
-      if (id === userId) {
-        return true;
-      }
+    let prevTotalLikes = foundFeed?.numberOfLikes as number;
+    let increasedLikes = prevTotalLikes + 1;
+    let decreasedLikes = prevTotalLikes - 1;
+
+    let isLiked: boolean | undefined;
+
+    foundFeed?.likes?.find((like: Types.ObjectId) => {
+      console.log(like?._id.toString());
+      if (like?._id.toString() === userId) {
+        isLiked = true;
+      } else isLiked = false;
     });
 
-    if (hasLiked) {
+    if (isLiked) {
       updatedFeed = await Feed.findByIdAndUpdate(
-        { _id: postId },
+        postId,
         {
           $pull: {
-            likes: {
-              $elemMatch: { _id: userId },
-            },
+            likes: userId,
           },
           $set: {
-            numberOfLikes: {
-              decreasedLikes,
-            },
+            numberOfLikes: decreasedLikes,
           },
         },
         { new: true }
       );
     } else {
       updatedFeed = await Feed.findByIdAndUpdate(
-        { _id: postId },
+        postId,
         {
           $push: {
             likes: {
@@ -129,9 +200,7 @@ export const likeFeed = async (req: Request, res: Response): Promise<Object> => 
             },
           },
           $set: {
-            numberOfLikes: {
-              increasedLikes,
-            },
+            numberOfLikes: increasedLikes,
           },
         },
         { new: true }
@@ -151,20 +220,21 @@ export const likeFeed = async (req: Request, res: Response): Promise<Object> => 
 };
 
 // Share Feed
-export const shareFeed = async (req: Request, res: Response): Promise<Object> => {
+export const shareFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   const { postId } = req.params;
-  const foundFeed = await Feed.findOne({ _id: postId });
-  let prevNumOfShare = foundFeed?.numberOfShares;
-  const newNumOfShare = prevNumOfShare && prevNumOfShare + 1;
+  const foundFeed: IFeed | null = await Feed.findOne({ _id: postId });
+  let prevNumOfShare = foundFeed?.numberOfShares as number;
+  const newNumOfShare = prevNumOfShare + 1;
 
   try {
     const foundFeed = await Feed.findByIdAndUpdate(
-      { _id: postId },
+      postId,
       {
         $set: {
-          numberOfShares: {
-            newNumOfShare,
-          },
+          numberOfShares: newNumOfShare,
         },
       },
       { new: true }
@@ -183,30 +253,57 @@ export const shareFeed = async (req: Request, res: Response): Promise<Object> =>
 };
 
 //Comment On Feed
-export const postComment = async (req: Request, res: Response): Promise<Object> => {
+export const postComment = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
   try {
     const { commenter, content } = req.body;
 
     const { postId } = req.params;
+
+    if (!content) {
+      return res.status(403).json({
+        message: "No content in comment, please input a comment",
+      });
+    }
 
     const newComment = new Comment({
       postId,
       commenter,
       content,
     });
-    var newCommentCreated = (await Comment.create(newComment)).populate(
-      "commenter",
-      "fullName, userName, profilePicture, _id"
-    );
-    // const comm = await newCommentCreated.populate("postId", "feedImage, content, author");
-    console.log(newCommentCreated);
+    var newCommentCreated = (
+      await (
+        await Comment.create(newComment)
+      ).populate("commenter", "fullName userName profilePic _id")
+    ).populate("postId", "feedImage content author");
+    var commenterPopulated = await User.populate(newCommentCreated, {
+      path: "commenter",
+      select: "fullName userName profilePic _id",
+    });
+    const commentPopulated = await Feed.populate(commenterPopulated, {
+      path: "comment.postId comment.commenter",
+      select: "feedImage content author firstName lastName userName _id",
+    });
 
-    console.log("Comment saved successfully");
+    const updateCommentOnFeed = await Feed.findByIdAndUpdate(
+      postId,
+      {
+        $push: {
+          comments: commentPopulated._id,
+        },
+      },
+      { new: true }
+    ).populate("comments", "commenter content")
+
+    // console.log("Comment saved successfully");
 
     return res.status(200).json({
-      message: "Comment Posted Successfully", 
-      result: newCommentCreated
-    })
+      message: "Comment Posted Successfully",
+      comment: commentPopulated,
+      parentFeed: updateCommentOnFeed,
+    });
   } catch (error) {
     return res.status(500).json({
       message: "An Error Occured, Try Again",
