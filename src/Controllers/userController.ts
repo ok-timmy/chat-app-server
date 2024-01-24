@@ -39,17 +39,19 @@ export const editUserProfile = async (
     res: Response
   ): Promise<Object> => {
     const { userName, fullName } = req.query;
+    console.log(userName, fullName)
   
     let foundUsersArray: Array<Object> = [];
     try {
-      if (userName) {
+      if (userName !== ""|| undefined) {
         const foundUsers = await User.find({ userName }).select(
           "_id userName fullName profilePic"
         );
-        foundUsers.map((foundUser) => foundUsersArray.push(foundUser));
+        foundUsers.map((foundUser) => foundUsersArray.push(foundUser))
+        ;
       }
-      if (fullName) {
-        const foundUsers = await User.find({ fullName }).select(
+     else if (fullName !=="" || undefined) {
+        const foundUsers = await User.find({ "fullName" : {$regex : `${fullName}`} }).select(
           "_id userName fullName profilePic"
         );
         foundUsers.map((foundUser) => foundUsersArray.push(foundUser));
@@ -70,8 +72,7 @@ export const editUserProfile = async (
     req: Request,
     res: Response
   ): Promise<Object> => {
-    const id = { id: req.params.id };
-  
+    const id =  req.params.id;
     try {
       await User.findByIdAndDelete(id);
       return res.status(200).json({

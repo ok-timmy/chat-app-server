@@ -69,6 +69,15 @@ export const sendFriendRequest = async (
   }
 };
 
+
+
+
+//Correct Function. 
+/*
+It stores friend request ID insted of friend ID
+It also returns users details when it sends requests successfully
+*/
+
 //Function to accept friend request
 export const acceptFriendRequest = async (
   req: Request,
@@ -104,7 +113,7 @@ export const acceptFriendRequest = async (
         userId,
         {
           $push: { friends: friendRequestId },
-          $pull: { friendRequests: { $elemMatch: friendRequestId } },
+          $pull: { friendRequests: { $elemMatch: { $eq: friendRequestId } } },
         },
         {
           new: true,
@@ -115,7 +124,7 @@ export const acceptFriendRequest = async (
         friendRequestId,
         {
           $push: { friends: userId },
-          $pull: { sentRequests: { $elemMatch: userId } },
+          $pull: { sentRequests: { $elemMatch:{$eq: userId }} },
         },
         { new: true }
       );
@@ -167,7 +176,7 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
       const updatedFriendRequestList = await User.findByIdAndUpdate(
         userId,
         {
-          $pull: { friendRequests: { $elemMatch: friendRequestId } },
+          $pull: { friendRequests: { $elemMatch: {$eq: friendRequestId} } },
         },
         {
           new: true,
@@ -178,11 +187,11 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
         friendRequestId,
         {
           $pull: {
-            sentRequests: { $elemMatch: userId },
+            sentRequests: { $elemMatch:{$eq: userId }},
           },
         },
         { new: true }
-      );
+      ).populate("friends");
 
       return res.status(200).json({
         message: "Friend Request successfully Sent",
@@ -204,8 +213,8 @@ export const getFriends = async (
   res: Response
 ): Promise<Object> => {
   const { userId } = req.body;
-  if(!userId) {
-    return res.status(404).json({message: "No User Id Provided"});
+  if (!userId) {
+    return res.status(404).json({ message: "No User Id Provided" });
   }
   try {
     const friends = await User.find({ _id: userId }).populate(
@@ -255,7 +264,7 @@ export const unFriend = async (req: Request, res: Response) => {
       const updatedFriendRequestList = await User.findByIdAndUpdate(
         userId,
         {
-          $pull: { friends: { $elemMatch: friendId } },
+          $pull: { friends: { $elemMatch: {$eq: friendId} } },
         },
         {
           new: true,
@@ -266,7 +275,7 @@ export const unFriend = async (req: Request, res: Response) => {
         friendId,
         {
           $pull: {
-            friends: { $elemMatch: userId },
+            friends: { $elemMatch:{ $eq: userId }},
           },
         },
         { new: true }

@@ -18,10 +18,10 @@ export const getMessages = async (
       .populate("sender", "fullName userName profilePic email ")
       .populate("chat");
 
-    return res.sendStatus(200).json({ statusCode: 200, data: messages });
+    return res.status(200).json({ statusCode: 200, data: messages });
   } catch (error) {
     return res
-      .sendStatus(500)
+      .status(500)
       .json({ message: "An error occured when fetching messages", error });
   }
 };
@@ -31,16 +31,16 @@ export const sendMessage = async (
   req: Request,
   res: Response
 ): Promise<Object> => {
-  const { content, chatId } = req.body;
+  const { content, chatId, userId } = req.body;
   if (!content || !chatId) {
     // Invalid data was passed into request
-    return res.sendStatus(400).json({
+    return res.status(400).json({
       message: "Content or ChatId cannot be empty",
     });
   }
 
   const newMessage = {
-    sender: req.body.userId,
+    sender: userId,
     content,
     chat: chatId,
   };
@@ -49,21 +49,29 @@ export const sendMessage = async (
     const message = (
       await (
         await Message.create(newMessage)
-      ).populate("sender", "firstName profilePic")
+      ).populate("sender", "firstName lastName userName profilePic")
     ).populate("chat");
 
     const messagePopulated = await User.populate(message, {
       path: "chat.users",
-      select: "fullName, userName, profilePic, email",
+      select: "fullName userName profilePic email",
     });
 
-    await Chat.findByIdAndUpdate(chatId, {
-      latestMessages: messagePopulated,
-    });
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      {
+        latestMessage: messagePopulated,
+      },
+      {
+        new: true,
+      }
+    );
 
-    return res.sendStatus(200).json({ data: messagePopulated });
+
+    return res.status(200).json({ data: messagePopulated, chat: updatedChat });
   } catch (error) {
-    return res.sendStatus(400).json({
+    // console.log(error);
+    return res.status(500).json({
       message: "Couldn't create new chat",
       error,
     });

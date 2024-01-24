@@ -22,11 +22,18 @@ export const createUser = async (
 
   // Check If User already exist and return appropriate error.
   const checkUserExist: IUser|null = await User.findOne({email: email});
-  console.log('line 24', checkUserExist);
+  // console.log('line 24', checkUserExist);
   if (checkUserExist) {
     return res
       .status(409)
       .json({ statusCode: 409, message: "This Email Already exists" });
+  }
+
+  const checkUserNameAvailable: IUser|null = await User.findOne({userName: userName})
+  if (checkUserNameAvailable) {
+    return res
+      .status(409)
+      .json({ statusCode: 409, message: "This Username is no longer Available" });
   }
 
   try {

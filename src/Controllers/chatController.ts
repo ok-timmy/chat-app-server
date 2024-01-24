@@ -8,28 +8,37 @@ export const fetchChatMessages = async (
   req: Request,
   res: Response
 ): Promise<Object> => {
+  const { recipientId } = req.body;
+
+  if (!recipientId) {
+    return res.status(404).json({
+      message: "Please provide a chatId in your request",
+    });
+  }
+
   try {
-    return Chat.find({ users: { $elemMatch: { $eq: req.body._id } } })
+    const foundChat = await Chat.findById({
+      users: { $elemMatch: { $eq: recipientId } },
+    })
+
       .populate("users", "-password")
       .populate("latestMessages")
-      .sort({ updatedAt: -1 })
-      .then(async (result) => {
-        //Come back to edit this type to what it should be
-        const populatedChat: Object | null = await User.populate(result, {
-          path: "latestMessage.sender",
-          select: "profilePic fullName userName email",
-        });
+      .sort({ updatedAt: -1 });
 
-        return res.sendStatus(200).json({ data: populatedChat });
-      })
-      .catch((error) => {
-        return res.sendStatus(400).json({
-          message: "An error occured while fetching chats",
-          error,
-        });
+    if (foundChat) {
+      const populatedChat: Object | null = await User.populate(foundChat, {
+        path: "latestMessage.sender",
+        select: "profilePic fullName userName email",
       });
+
+      return res.status(200).json({ data: populatedChat });
+    } else {
+      return res.status(400).json({
+        message: "An error occured while fetching chats",
+      });
+    }
   } catch (error) {
-    return res.sendStatus(404).json({
+    return res.status(404).json({
       message: "Could not find chat",
       error,
     });
@@ -43,9 +52,9 @@ export const createNewChat = async (
 ): Promise<Object> => {
   const { recipientId, senderId } = req.body;
 
-  if (!recipientId) {
-    return res.sendStatus(404).json({
-      message: "No User found",
+  if (!recipientId || !senderId) {
+    return res.status(404).json({
+      message: "No Sender or Recipient found",
     });
   }
 
@@ -64,7 +73,7 @@ export const createNewChat = async (
   });
 
   if (newChat.length > 0) {
-    return res.sendStatus(200).json({
+    return res.status(200).json({
       message: "Chat Found",
       data: newChat[0],
     });
@@ -76,15 +85,23 @@ export const createNewChat = async (
 
     try {
       const createdChat = await Chat.create(chatData);
-      const fullChat: IChat | null = await Chat.findOne({
-        _id: createdChat._id,
-      }).populate("users", "-password");
-      return res.sendStatus(200).json({
-        message: "Chat created and fetched successfull",
-        data: fullChat,
+
+      const newlyCreatedChat = await Chat.findById(createdChat.id).populate(
+        "users",
+        "userName firstName lastName profilePic _id"
+      );
+
+      const chatWithUserPopulated = await User.populate(newlyCreatedChat, {
+        path: "users",
+        select: "userName firstName lastName profilePic _id",
+      });
+      return res.status(200).json({
+        message: "Chat created and fetched successfully",
+        data: createdChat,
+        data2: chatWithUserPopulated,
       });
     } catch (error) {
-      return res.sendStatus(404).json({
+      return res.status(404).json({
         message: "An error occured while fetching the chat",
         error,
       });

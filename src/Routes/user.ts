@@ -21,7 +21,7 @@ userRouter.put("/:id", editUserProfile);
 userRouter.delete("/:id", deleteUserProfile);
 
 //Find User by username or first Name or Last Name
-userRouter.get("/find/?username=detail&fullName=detail", findUser);
+userRouter.get("/find", findUser);
 
 //Get all Friends
 userRouter.get("/allFriends", getFriends)
