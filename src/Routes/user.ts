@@ -2,17 +2,22 @@ import express, { type Router } from "express";
 import {
   deleteUserProfile,
   editUserProfile,
+  fetchUserDetails,
   findUser,
 } from "../Controllers/userController";
 import {
   acceptFriendRequest,
   deleteFriendRequest,
+  getAUserFriendRequests,
   getFriends,
   sendFriendRequest,
   unFriend,
 } from "../Controllers/requestsController";
 
 const userRouter: Router = express.Router();
+
+//Find User Details
+userRouter.get("/:id", fetchUserDetails);
 
 //Edit User Details
 userRouter.put("/:id", editUserProfile);
@@ -24,7 +29,10 @@ userRouter.delete("/:id", deleteUserProfile);
 userRouter.get("/find", findUser);
 
 //Get all Friends
-userRouter.get("/allFriends", getFriends)
+userRouter.get("/allFriends/:userId", getFriends);
+
+//Get all Friend Requests
+userRouter.get("/allFriendRequests/:userId", getAUserFriendRequests)
 
 //Accept Friend Request
 userRouter.post("/acceptRequest", acceptFriendRequest);
@@ -37,7 +45,6 @@ userRouter.post("/unfriend", unFriend);
 
 //Delete Friend Request
 userRouter.post("/removeFriendRequest", deleteFriendRequest);
-
 
 
 export = userRouter;

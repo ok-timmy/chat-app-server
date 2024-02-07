@@ -13,6 +13,7 @@ import {
   likeFeed,
   shareFeed,
   postComment,
+  getSingleUserFeed,
 } from "../Controllers/feedsController";
 
 const feedsRouter = express.Router()
@@ -20,6 +21,9 @@ const feedsRouter = express.Router()
 
 // Get All Feeds
 feedsRouter.get("/all", getAllFeeds);
+
+//Fetch all Posts made by a single user
+feedsRouter.get("/:id", getSingleUserFeed)
 
 //Create Feed
 feedsRouter.post("/create", createFeed);
@@ -37,7 +41,7 @@ feedsRouter.patch("/like/:postId/:userId", likeFeed);
 feedsRouter.patch("/share/:postId", shareFeed);
 
 //Comment On Feed
-feedsRouter.post("/comment/:postId/:userId", postComment);
+feedsRouter.post("/comment/:postId", postComment);
 
 
 export = feedsRouter;

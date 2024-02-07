@@ -3,10 +3,11 @@ const { json } = require("express");
 import cors from "cors";
 import dotenv from "dotenv";
 import config from "./config";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+// import helmet, { HelmetOptions } from 'helmet';
 import { connectDB } from "./connectDB";
 import { Socket } from "socket.io";
-import bodyParser from "body-parser";
+// import bodyParser from "body-parser";
 import {
   authRouter,
   feedsRouter,
@@ -21,6 +22,7 @@ import verifyJWT from "./Middlewares/verifyToken";
 const app: Express = express();
 
 dotenv.config();
+// app.use(helmet({} as HelmetOptions));
 app.use(cors());
 app.use(json({ extended: false }));
 
@@ -54,20 +56,20 @@ const io = require("socket.io")(server, {
 });
 
 io.on("connection", (socket: Socket) => {
-  console.log("Connected to socketio");
+  console.log("Connected to socketio:", socket.id);
 
   //SIGN UP SOCKET
-  socket.on("Sign Up", (userData) => {
-    socket.join(userData._id);
-    console.log(userData._id);
-    socket.emit(`${userData.firstName} Signed Up`);
+  socket.on("Sign Up", (userName: string) => {
+    socket.join(userName);
+    console.log(`A new user Signed Up with the username ${userName}`);
+    socket.emit(`A new user Signed Up with the username ${userName}`);
   });
 
   //LOGIN SOCKET
-  socket.on("Sign In", (userData) => {
-    socket.join(userData);
-    console.log(userData._id);
-    socket.emit(`${userData.userName} logged in to his account`);
+  socket.on("Sign In", (userId: string) => {
+    socket.join(userId);
+    console.log(`User with id ${userId} just logged into their account`);
+    socket.emit(`logged in to his account`);
   });
 
   //CREATE CHAT SOCKET
@@ -81,7 +83,7 @@ io.on("connection", (socket: Socket) => {
   );
 
   //SEND A MESSAGE
-  socket.on("Send a message to somone", (message) => {
+  socket.on("Send a message to someone", (message) => {
     console.log(message);
     socket.send(message);
 
@@ -102,6 +104,15 @@ io.on("connection", (socket: Socket) => {
     );
   });
 
+  //USER IS ONLINE
+  socket.on("User is Online", () => {});
+
+  //USER IS TYPING
+  socket.on("User is Typing", () => {});
+
+  //USER READ YOUR MESSAGE
+  socket.on("User Just Read Your Message", () => {});
+
   //SEND A FRIEND REQUEST
   socket.on(
     "Sent a friend request",
@@ -117,4 +128,10 @@ io.on("connection", (socket: Socket) => {
     "Friend Request accepted",
     (senderId: string, recipientId: string) => {}
   );
+
+  //USER CREATED A FEED
+  socket.on("Created A Feed", ( userName:string) => {
+    console.log(`User with UserName ${userName} created a feed`);
+    socket.emit(`User with UserName ${userName} created a feed`);
+  });
 });

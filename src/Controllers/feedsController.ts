@@ -3,7 +3,7 @@ import { Feed } from "../Models/Feed";
 import { Comment } from "../Models/Comment";
 import { User } from "../Models/User";
 import { IFeed } from "../Interfaces/Feed.interface";
-import {  Types } from "mongoose";
+import { Types } from "mongoose";
 
 //Get all feeds
 export const getAllFeeds = async (
@@ -11,16 +11,45 @@ export const getAllFeeds = async (
   res: Response
 ): Promise<Object> => {
   try {
-    const foundFeeds = await Feed.find().sort({ updatedAt: -1 }).exec();
-    return res.status(200).json({
-      message: "Retrieved All Posts",
-      result: foundFeeds,
-    });
+    const foundFeeds = await Feed.find()
+      .sort({ updatedAt: -1 })
+      .populate("author", "firstName lastName userName profilePic")
+      .exec();
+    return res.status(200).send(foundFeeds);
   } catch (error) {
     return res.status(500).json({
       message: "An Error Occured",
       error,
     });
+  }
+};
+
+//Get Single User Feed
+export const getSingleUserFeed = async (
+  req: Request,
+  res: Response
+): Promise<Object> => {
+  const { id } = req.params;
+  console.log(id);
+
+  try {
+    const userFeeds = await Feed.find().sort({ updatedAt: -1 })
+    .populate("author", "_id firstName lastName userName profilePic")
+    .exec();
+    const foundFeeds = [];
+    const userFoundFeeds = userFeeds.filter((userfeed) => {
+      if (userfeed.author._id.toString() === id) {
+        return foundFeeds.push(userfeed);
+      }
+    });
+
+    return res
+      .status(200)
+      .json({ message: "User feeds found", data: userFoundFeeds });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "An Error occured when trying to fetch data" });
   }
 };
 
@@ -30,20 +59,20 @@ export const createFeed = async (
   res: Response
 ): Promise<Object> => {
   try {
-    const { content, userId } = req.body;
+    const { content, author } = req.body;
     if (!content) {
       return res.status(202).json({
         message: "Feed content Cannot be empty",
       });
     }
-    if (!userId) {
-      return res.status(404).json({
+    if (!author) {
+      return res.status(403).json({
         message: "No User Id found in request, check request body",
       });
     }
     const newFeed = {
       content: content,
-      author: userId,
+      author: author,
     };
     try {
       const createdFeed = (await Feed.create({ ...newFeed })).populate(
@@ -53,7 +82,7 @@ export const createFeed = async (
 
       const feedPopulated = await User.populate(createdFeed, {
         path: "feed.author",
-        select: "userName firstName lastName profilePic",
+        select: "id userName firstName lastName profilePic",
       });
       return res.status(200).json({
         message: "Post Created Successfully",
@@ -207,9 +236,10 @@ export const likeFeed = async (
       );
     }
 
+console.log(updatedFeed)
     return res.status(200).json({
       message: "Post Likes updated successfully",
-      result: updatedFeed,
+      result: updatedFeed?.likes.length,
     });
   } catch (error) {
     return res.status(500).json({
@@ -295,7 +325,7 @@ export const postComment = async (
         },
       },
       { new: true }
-    ).populate("comments", "commenter content")
+    ).populate("comments", "commenter content");
 
     // console.log("Comment saved successfully");
 

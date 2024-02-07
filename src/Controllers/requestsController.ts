@@ -43,7 +43,7 @@ export const sendFriendRequest = async (
         {
           new: true,
         }
-      );
+      ).select("_id userName firstName lastName profilePic");
 
       await User.findByIdAndUpdate(
         friendId,
@@ -69,10 +69,7 @@ export const sendFriendRequest = async (
   }
 };
 
-
-
-
-//Correct Function. 
+//  Correct Function.
 /*
 It stores friend request ID insted of friend ID
 It also returns users details when it sends requests successfully
@@ -83,7 +80,7 @@ export const acceptFriendRequest = async (
   req: Request,
   res: Response
 ): Promise<Object> => {
-  const { friendRequestId, userId } = req.body;
+  const { friendRequestId, friendId, userId } = req.body;
 
   if (!friendRequestId || !userId) {
     return res.status(404).json({
@@ -112,7 +109,7 @@ export const acceptFriendRequest = async (
       const newfriendToBeAdded = await User.findByIdAndUpdate(
         userId,
         {
-          $push: { friends: friendRequestId },
+          $push: { friends: friendId },
           $pull: { friendRequests: { $elemMatch: { $eq: friendRequestId } } },
         },
         {
@@ -121,10 +118,10 @@ export const acceptFriendRequest = async (
       );
 
       await User.findByIdAndUpdate(
-        friendRequestId,
+        friendId,
         {
           $push: { friends: userId },
-          $pull: { sentRequests: { $elemMatch:{$eq: userId }} },
+          $pull: { sentRequests: { $elemMatch: { $eq: userId } } },
         },
         { new: true }
       );
@@ -176,18 +173,18 @@ export const deleteFriendRequest = async (req: Request, res: Response) => {
       const updatedFriendRequestList = await User.findByIdAndUpdate(
         userId,
         {
-          $pull: { friendRequests: { $elemMatch: {$eq: friendRequestId} } },
+          $pull: { friendRequests: { $elemMatch: { $eq: friendRequestId } } },
         },
         {
           new: true,
         }
-      );
+      ).select("_id firstName lastName userName profilePic");
 
       await User.findByIdAndUpdate(
         friendRequestId,
         {
           $pull: {
-            sentRequests: { $elemMatch:{$eq: userId }},
+            sentRequests: { $elemMatch: { $eq: userId } },
           },
         },
         { new: true }
@@ -212,7 +209,7 @@ export const getFriends = async (
   req: Request,
   res: Response
 ): Promise<Object> => {
-  const { userId } = req.body;
+  const { userId } = req.params;
   if (!userId) {
     return res.status(404).json({ message: "No User Id Provided" });
   }
@@ -225,6 +222,27 @@ export const getFriends = async (
     return res
       .status(200)
       .json({ message: "Friends successfully fetched", data: friends });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Something went wrong", error });
+  }
+};
+
+//Fetch All Friend Requests of a particular user
+export const getAUserFriendRequests = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(404).json({ message: "No User Id Provided" });
+  }
+  try {
+    const friends = await User.find({ _id: userId }).populate(
+      "friendRequests",
+      "-password -accessToken -refreshToken"
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Friend Requests successfully fetched", data: friends });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Something went wrong", error });
@@ -264,7 +282,7 @@ export const unFriend = async (req: Request, res: Response) => {
       const updatedFriendRequestList = await User.findByIdAndUpdate(
         userId,
         {
-          $pull: { friends: { $elemMatch: {$eq: friendId} } },
+          $pull: { friends: { $elemMatch: { $eq: friendId } } },
         },
         {
           new: true,
@@ -275,7 +293,7 @@ export const unFriend = async (req: Request, res: Response) => {
         friendId,
         {
           $pull: {
-            friends: { $elemMatch:{ $eq: userId }},
+            friends: { $elemMatch: { $eq: userId } },
           },
         },
         { new: true }
@@ -294,3 +312,4 @@ export const unFriend = async (req: Request, res: Response) => {
     });
   }
 };
+
